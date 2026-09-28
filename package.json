@@ -1,0 +1,14 @@
+{
+  "name": "prismlexi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PrismLexi — premium AI image generator",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "check": "node --check app.js && node --check server.js && node --check netlify/functions/generate.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
