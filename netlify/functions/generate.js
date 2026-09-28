@@ -184,7 +184,7 @@ async function handleEdit(body) {
 
   const key = process.env.POLLINATIONS_API_KEY || "";
   if (!key) {
-    return fail(503, "edits require POLLINATIONS_API_KEY (top up at enter.pollinations.ai/top-up), then describe your change to generate fresh instead");
+    return fail(503, "edits require POLLINATIONS_API_KEY in site env — top up pollen at enter.pollinations.ai/top-up");
   }
 
   const img = decodeDataUrl(payload.image);

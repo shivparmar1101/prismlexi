@@ -177,6 +177,7 @@
     session: null,
     authMode: "login",
     lastError: "",
+    editNeedsServer: false,
     editingId: null
   };
 
@@ -699,6 +700,15 @@
     return null;
   }
 
+  function isLocalDev() {
+    const h = location.hostname;
+    return !h || h === "localhost" || h === "127.0.0.1" || h === "::1" || h === "[::1]";
+  }
+
+  function hint(localMsg, hostedMsg) {
+    return isLocalDev() ? localMsg : hostedMsg;
+  }
+
   async function tryProxy(prompt, w, h, seed) {
     try {
       const qs = new URLSearchParams({
@@ -713,7 +723,7 @@
       const data = await readJson(res);
       if (!data) {
         // non-JSON response (e.g. XAMPP 404 page) → no server running here
-        return { unreachable: true, error: "local API not found (run `node server.js`)" };
+        return { unreachable: true, error: hint("local API not found (run `node server.js`)", "no generation API on this site") };
       }
       if (data.url) {
         if (await probeImage(data.url)) return { ok: true, src: data.url };
@@ -722,7 +732,7 @@
       if (data.b64) return { ok: true, src: data.b64 };
       return { error: data.error || "proxy returned no image" };
     } catch (e) {
-      return { unreachable: true, error: "local server not running (node server.js)" };
+      return { unreachable: true, error: hint("local server not running (node server.js)", "generation API unreachable") };
     }
   }
 
@@ -764,8 +774,10 @@
 
   async function editWithBase(text) {
     state.lastError = "";
+    state.editNeedsServer = false;
     if (!CONFIG.api) {
-      state.lastError = "no edit server configured — run `node server.js`";
+      state.editNeedsServer = true;
+      state.lastError = hint("no edit server configured — run `node server.js`", "image editing needs a server");
       return "";
     }
     try {
@@ -777,11 +789,15 @@
       });
       const data = await readJson(res);
       if (data && data.url && (await probeImage(data.url))) return data.url;
-      state.lastError = data
-        ? data.error || "edit returned no image"
-        : "local API not found (run `node server.js`)";
+      if (data) {
+        state.lastError = data.error || "edit returned no image";
+      } else {
+        state.editNeedsServer = true;
+        state.lastError = hint("local API not found (run `node server.js`)", "no edit API on this site");
+      }
     } catch (e) {
-      state.lastError = "local server not running (node server.js)";
+      state.editNeedsServer = true;
+      state.lastError = hint("local server not running (node server.js)", "edit API unreachable");
     }
     return "";
   }
@@ -819,7 +835,11 @@
       usedModel = CONFIG.editModel + " edit";
       url = await editWithBase(text);
       if (!url) {
-        toast("Edit unavailable (" + (state.lastError || "unknown") + ") — generating fresh instead");
+        toast(
+          (state.editNeedsServer
+            ? hint("Edit needs the local server (run `node server.js`)", "Image editing needs a server")
+            : "Edit unavailable (" + (state.lastError || "unknown") + ")") + " — generating fresh instead"
+        );
         usedModel = CONFIG.model;
         state.lastError = "";
         url = await textGen(text, w, h, seed);
