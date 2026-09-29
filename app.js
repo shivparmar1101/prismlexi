@@ -19,8 +19,8 @@
       model: "tongyi-mai/z-image-turbo",
       editModel: "kontext",
       supabase: {
-        url: "", // e.g. "https://abcdxyz.supabase.co"
-        anonKey: "" // Project Settings → API → anon public key
+        url: "https://owdrhpymnfknzzgdzcqv.supabase.co",
+        anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZHJocHltbmZrbnp6Z2R6Y3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2NjI2NzIsImV4cCI6MjEwNjIzODY3Mn0.jTaIA2iMdS9_MPkn8dMUyOxVmydhSVv7Cg4NZ_nP28Y"
       }
     },
     window.PRISMLEXI_CONFIG || {}

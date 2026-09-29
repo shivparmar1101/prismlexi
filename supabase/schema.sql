@@ -11,6 +11,7 @@ create table if not exists public.prismlexi_history (
 -- Row Level Security: users can only ever read/write their OWN row.
 alter table public.prismlexi_history enable row level security;
 
+drop policy if exists "users manage own history" on public.prismlexi_history;
 create policy "users manage own history"
   on public.prismlexi_history
   for all
