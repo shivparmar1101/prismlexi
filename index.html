@@ -403,9 +403,9 @@
   <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" hidden />
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <!-- Supabase client (cross-browser auth + history sync). Loaded first so
-       app.js can pick it up; if it fails to load, app falls back to local auth. -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase client (cross-browser auth + history sync). Bundled locally so
+       auth never depends on a CDN; app.js shows a clear error if it's missing. -->
+  <script src="vendor/supabase.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

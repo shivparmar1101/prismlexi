@@ -31,13 +31,13 @@
     const c = CONFIG.supabase || {};
     if (!c.url || !c.anonKey) return null;
     if (!window.supabase || typeof window.supabase.createClient !== "function") {
-      console.warn("PrismLexi: supabase config set but supabase-js CDN not loaded — using local auth.");
+      console.warn("PrismLexi: supabase-js not loaded — auth will show an error instead of local fallback.");
       return null;
     }
     try {
       return window.supabase.createClient(c.url, c.anonKey);
     } catch (e) {
-      console.warn("PrismLexi: supabase init failed — using local auth.", e);
+      console.warn("PrismLexi: supabase init failed.", e);
       return null;
     }
   })();
@@ -1379,6 +1379,10 @@
         toast("Welcome back, " + firstName(state.session ? state.session.name : name) + " ✦");
       }
       return;
+    }
+
+    if (CONFIG.supabase && CONFIG.supabase.url && CONFIG.supabase.anonKey) {
+      return authError("Sign-in couldn't load — refresh the page (Ctrl+Shift+R) and try again.");
     }
 
     // ---- Local per-browser demo ----
