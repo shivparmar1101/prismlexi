@@ -1332,6 +1332,8 @@
   E.authForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (authBusy) return;
+    E.formError.hidden = true;
+    E.formError.classList.remove("is-info");
 
     const mode = state.authMode;
     const name = E.authName.value.trim();
