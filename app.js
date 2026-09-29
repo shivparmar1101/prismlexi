@@ -1199,26 +1199,37 @@
     if (label) E.authSubmitLabel.textContent = label;
   }
 
-  function socialSignIn(provider) {
+  async function socialSignIn(provider) {
     // Supabase: real OAuth redirect (configure Google/Apple under Auth → Providers)
     if (SB) {
       try {
-        const ret = Promise.resolve(
-          SB.auth.signInWithOAuth({
-            provider,
-            options: { redirectTo: window.location.origin + window.location.pathname }
-          })
-        );
-        ret.then((res) => {
-          if (res && res.error) authError(supaMsg(res.error));
-        }).catch((e) => authError(String((e && e.message) || e)));
+        const c = CONFIG.supabase;
+        const res = await fetch(c.url + "/auth/v1/settings", { headers: { apikey: c.anonKey } });
+        const s = await res.json();
+        if (s && s.external && s.external[provider] === false) {
+          authError(providerLabel(provider) + " sign-in isn't enabled yet — continue with email instead.");
+          return;
+        }
+      } catch (e) {
+        // couldn't verify — try OAuth anyway
+      }
+      try {
+        const ret = await SB.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo: window.location.origin + window.location.pathname }
+        });
+        if (ret && ret.error) authError(supaMsg(ret.error));
       } catch (e) {
         authError(String((e && e.message) || e));
       }
       return;
     }
 
-    // Local dummy accounts (per-browser demo)
+    if (CONFIG.supabase && CONFIG.supabase.url && CONFIG.supabase.anonKey) {
+      return authError("Sign-in couldn't load — refresh the page (Ctrl+Shift+R) and try again.");
+    }
+
+    // Local dummy accounts (demo mode only)
     const email = "you." + provider + "@prismlexi.app";
     const accounts = loadAccounts();
     let acct = accounts[email];
