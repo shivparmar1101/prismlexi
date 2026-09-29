@@ -2929,3 +2929,101 @@ button {
 .auth-foot .linkish + .linkish {
   margin-left: 16px;
 }
+
+/* sidebar: new chat pill */
+.side-newchat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 12px 2px;
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--stroke);
+  color: #e9e5ff;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: 0.24s;
+}
+.side-newchat svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: #c4b5fd;
+}
+.side-newchat:hover {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.5);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.28);
+}
+.app.is-collapsed .side-newchat {
+  justify-content: center;
+  padding: 10px;
+  margin-inline: 8px;
+}
+.app.is-collapsed .side-newchat .snc-label {
+  display: none;
+}
+
+/* sidebar: project filter chips */
+.proj-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px 2px;
+}
+.proj-chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--stroke);
+  color: var(--dim);
+  cursor: pointer;
+  transition: 0.2s;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.proj-chip:hover {
+  color: #fff;
+  border-color: rgba(34, 211, 238, 0.4);
+}
+.proj-chip.is-active {
+  background: rgba(34, 211, 238, 0.13);
+  border-color: rgba(34, 211, 238, 0.5);
+  color: var(--cyan);
+}
+.app.is-collapsed .proj-chips {
+  display: none;
+}
+
+/* composer: project name input */
+.ctl-input {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #dedaf4;
+  width: 148px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--stroke);
+  transition: 0.24s;
+}
+.ctl-input::placeholder {
+  color: #7f7aa3;
+  font-weight: 500;
+}
+.ctl-input:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.5);
+  background-color: rgba(34, 211, 238, 0.07);
+}

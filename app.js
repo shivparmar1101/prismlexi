@@ -112,6 +112,9 @@
     modelSelect: $("modelSelect"),
     promptCount: $("promptCount"),
     newChatBtn: $("newChatBtn"),
+    sideNewChatBtn: $("sideNewChatBtn"),
+    projChips: $("projChips"),
+    projectInput: $("projectInput"),
     baseNote: $("baseNote"),
     fileInput: $("fileInput"),
     toast: $("toast"),
@@ -191,7 +194,8 @@
     authMode: "login",
     lastError: "",
     editNeedsServer: false,
-    editingId: null
+    editingId: null,
+    projectFilter: ""
   };
 
   /* ---------- utils ---------- */
@@ -397,12 +401,16 @@
     try {
       const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
       if (prefs.collapsed && !isMobile()) E.app.classList.add("is-collapsed");
+      if (prefs.project) E.projectInput.value = prefs.project;
     } catch (e) {}
   }
 
   function savePrefs() {
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ collapsed: E.app.classList.contains("is-collapsed") }));
+      localStorage.setItem(
+        PREFS_KEY,
+        JSON.stringify({ collapsed: E.app.classList.contains("is-collapsed"), project: E.projectInput.value })
+      );
     } catch (e) {}
   }
 
@@ -456,6 +464,15 @@
         item.project = projectFor(item);
         backfilled = true;
       }
+    });
+    if (backfilled) persistHistory();
+    if (state.projectFilter && !state.history.some((i) => i.project === state.projectFilter)) {
+      state.projectFilter = "";
+    }
+    const filter = state.projectFilter;
+
+    state.history.forEach((item) => {
+      if (filter && item.project !== filter) return;
 
       const wrap = document.createElement("div");
       wrap.className = "history-item" + (item.id === state.currentId ? " is-active" : "");
@@ -520,7 +537,39 @@
       E.historyList.appendChild(wrap);
     });
 
-    if (backfilled) persistHistory();
+    renderProjectChips();
+  }
+
+  function renderProjectChips() {
+    const projects = [];
+    state.history.forEach((item) => {
+      if (item.project && projects.indexOf(item.project) === -1) projects.push(item.project);
+    });
+
+    if (projects.length < 2) {
+      E.projChips.hidden = true;
+      E.projChips.textContent = "";
+      return;
+    }
+
+    E.projChips.hidden = false;
+    E.projChips.textContent = "";
+
+    const mk = (label, value) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "proj-chip" + (state.projectFilter === value ? " is-active" : "");
+      b.dataset.project = value;
+      b.textContent = label;
+      b.addEventListener("click", () => {
+        state.projectFilter = value;
+        renderHistory();
+      });
+      E.projChips.appendChild(b);
+    };
+
+    mk("All", "");
+    projects.forEach((p) => mk(p, p));
   }
 
   /* ---------- viewer ---------- */
@@ -867,7 +916,7 @@
       id: uid(),
       type: "generated",
       prompt: text,
-      project: deriveProjectName(text),
+      project: E.projectInput.value.trim() || deriveProjectName(text),
       url,
       w,
       h,
@@ -1323,6 +1372,11 @@
 
   E.generateBtn.addEventListener("click", generate);
   E.newChatBtn.addEventListener("click", newChat);
+  E.sideNewChatBtn.addEventListener("click", () => {
+    newChat();
+    E.app.classList.remove("mobile-open");
+  });
+  E.projectInput.addEventListener("input", savePrefs);
 
   E.suggestRow.addEventListener("click", (e) => {
     const chip = e.target.closest(".suggest");

@@ -24,6 +24,10 @@
   <div class="app" id="app">
 
     <aside class="sidebar" id="sidebar">
+      <button class="side-newchat" id="sideNewChatBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1L19 8.5a2.1 2.1 0 0 0-3-3L5.5 16 4 20z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14.5 7l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span class="snc-label">New chat</span>
+      </button>
       <div class="side-head">
         <button class="side-toggle" id="sideToggle" type="button" aria-label="Collapse history sidebar" title="Collapse sidebar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="9.5" y1="4" x2="9.5" y2="20" stroke="currentColor" stroke-width="1.7"/><line x1="6.2" y1="12" x2="4.6" y2="12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="7.6" y1="9.8" x2="4.6" y2="9.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="7.6" y1="14.2" x2="4.6" y2="14.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -31,6 +35,8 @@
         <span class="side-title">History</span>
         <button class="mini-btn" id="clearHistory" type="button">Clear</button>
       </div>
+
+      <div class="proj-chips" id="projChips" hidden></div>
 
       <div class="history-list" id="historyList">
         <div class="history-empty" id="historyEmpty">
@@ -233,6 +239,9 @@
                   <option value="flux">Flux</option>
                   <option value="sana">Sana</option>
                 </select>
+              </label>
+              <label class="ctl"><span>Project</span>
+                <input class="ctl-input" id="projectInput" type="text" maxlength="60" placeholder="Project name…" autocomplete="off" spellcheck="false" />
               </label>
               <span class="ctl-note" id="baseNote">no base image</span>
               <span class="ctl-note" id="promptCount">0 / 4000</span>
