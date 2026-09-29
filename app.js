@@ -42,6 +42,8 @@
     }
   })();
 
+  const CAME_FOR_RECOVERY = /type=recovery/.test(String(location.hash || ""));
+
   const SIZES = {
     "1/1": [1024, 1024],
     "4/5": [896, 1120],
@@ -107,6 +109,7 @@
     styleSelect: $("styleSelect"),
     ratioSelect: $("ratioSelect"),
     qualitySelect: $("qualitySelect"),
+    modelSelect: $("modelSelect"),
     baseNote: $("baseNote"),
     fileInput: $("fileInput"),
     toast: $("toast"),
@@ -138,6 +141,13 @@
     authEmail: $("authEmail"),
     authPass: $("authPass"),
     passToggle: $("passToggle"),
+    authPass2: $("authPass2"),
+    emailGroup: $("emailGroup"),
+    passGroup: $("passGroup"),
+    pass2Group: $("pass2Group"),
+    authLinks: $("authLinks"),
+    forgotLink: $("forgotLink"),
+    authBack: $("authBack"),
     formError: $("formError"),
     authSubmit: $("authSubmit"),
     authSubmitLabel: $("authSubmitLabel"),
@@ -174,6 +184,7 @@
     style: "Cinematic",
     ratio: "1/1",
     quality: "High",
+    model: "tongyi-mai/z-image-turbo",
     session: null,
     authMode: "login",
     lastError: "",
@@ -716,7 +727,7 @@
         width: String(w),
         height: String(h),
         seed: String(seed),
-        model: CONFIG.model,
+        model: state.model,
         referrer: "prismlexi"
       });
       const res = await fetch(CONFIG.api + "?" + qs, { headers: { Accept: "application/json" } });
@@ -826,7 +837,7 @@
     setViewerMode("loading");
 
     let url = "";
-    let usedModel = CONFIG.model;
+    let usedModel = state.model;
     const demoMode = !CONFIG.api && !CONFIG.anonEndpoint;
 
     if (demoMode) {
@@ -838,9 +849,9 @@
         toast(
           (state.editNeedsServer
             ? hint("Edit needs the local server (run `node server.js`)", "Image editing needs a server")
-            : "Edit unavailable (" + (state.lastError || "unknown") + ")") + " — generating fresh instead"
+            : "Edit unavailable (" + (state.lastError || "unknown") + ")")             + " — generating fresh instead"
         );
-        usedModel = CONFIG.model;
+        usedModel = state.model;
         state.lastError = "";
         url = await textGen(text, w, h, seed);
       }
@@ -1078,7 +1089,7 @@
 
   function setAuthMode(mode) {
     state.authMode = mode;
-    const isForm = mode === "login" || mode === "signup";
+    const isForm = mode === "login" || mode === "signup" || mode === "reset" || mode === "recover";
     E.authViews.hidden = !isForm;
     E.accountView.hidden = mode !== "account";
     E.creditsView.hidden = mode !== "credits";
@@ -1088,17 +1099,40 @@
     }
 
     const signup = mode === "signup";
+    const reset = mode === "reset";
+    const recover = mode === "recover";
+    const sub = reset || recover;
+    E.authTabs.hidden = sub;
     E.authTabs.dataset.mode = mode;
     E.authTabs.querySelectorAll(".auth-tab").forEach((t) => {
       t.classList.toggle("is-active", t.dataset.mode === mode);
     });
     E.nameGroup.hidden = !signup;
-    E.authTitle.textContent = signup ? "Create your account" : "Welcome back";
-    E.authSub.textContent = signup
-      ? "Save renders, sync history and keep your credits in one place."
-      : "Log in to keep your renders, history and credits in sync.";
-    E.authSubmitLabel.textContent = signup ? "Create account" : "Log in";
-    E.authPass.autocomplete = signup ? "new-password" : "current-password";
+    E.emailGroup.hidden = recover;
+    E.passGroup.hidden = reset;
+    E.pass2Group.hidden = !recover;
+    E.authViews.classList.toggle("is-submode", sub);
+    E.authLinks.hidden = !(sub || (mode === "login" && !!SB));
+    E.forgotLink.hidden = mode !== "login" || !SB;
+    E.authBack.hidden = !sub;
+
+    if (reset) {
+      E.authTitle.textContent = "Reset your password";
+      E.authSub.textContent = "Enter your email and we'll send you a reset link.";
+      E.authSubmitLabel.textContent = "Send reset link";
+    } else if (recover) {
+      E.authTitle.textContent = "Set a new password";
+      E.authSub.textContent = "Choose a new password for your account.";
+      E.authSubmitLabel.textContent = "Update password";
+      E.authPass.autocomplete = "new-password";
+    } else {
+      E.authTitle.textContent = signup ? "Create your account" : "Welcome back";
+      E.authSub.textContent = signup
+        ? "Save renders, sync history and keep your credits in one place."
+        : "Log in to keep your renders, history and credits in sync.";
+      E.authSubmitLabel.textContent = signup ? "Create account" : "Log in";
+      E.authPass.autocomplete = signup ? "new-password" : "current-password";
+    }
     E.formError.hidden = true;
     E.formError.classList.remove("is-info");
     E.authForm.reset();
@@ -1108,7 +1142,8 @@
     setAuthMode(mode || "login");
     E.authOverlay.hidden = false;
     setTimeout(() => {
-      const field = state.authMode === "signup" ? E.authName : state.authMode === "login" ? E.authEmail : null;
+      const m = state.authMode;
+      const field = m === "signup" ? E.authName : m === "recover" ? E.authPass : m === "credits" || m === "account" ? null : E.authEmail;
       if (field) field.focus();
     }, 60);
   }
@@ -1280,6 +1315,7 @@
 
   E.styleSelect.addEventListener("change", () => (state.style = E.styleSelect.value));
   E.qualitySelect.addEventListener("change", () => (state.quality = E.qualitySelect.value));
+  E.modelSelect.addEventListener("change", () => (state.model = E.modelSelect.value));
   E.ratioSelect.addEventListener("change", () => {
     state.ratio = E.ratioSelect.value;
     E.canvasCard.style.setProperty("--stage-ratio", state.ratio);
@@ -1352,11 +1388,35 @@
     const pass = E.authPass.value;
     const accounts = loadAccounts();
 
-    if (!validEmail(email)) return authError("That email address doesn't look right.");
-    if (pass.length < 6) return authError("Password must be at least 6 characters.");
+    if (mode !== "reset" && mode !== "recover" && !validEmail(email)) return authError("That email address doesn't look right.");
+    if (mode !== "reset" && pass.length < 6) return authError("Password must be at least 6 characters.");
 
     // ---- Supabase (cross-browser) ----
     if (SB) {
+      if (mode === "reset") {
+        setAuthBusy(true, "Sending link…");
+        const { error } = await SB.auth.resetPasswordForEmail(email, {
+          redirectTo: location.origin + location.pathname
+        });
+        setAuthBusy(false);
+        if (error) return authError(supaMsg(error));
+        E.formError.textContent = "Reset link sent to " + email + " — check inbox and spam.";
+        E.formError.classList.add("is-info");
+        E.formError.hidden = false;
+        return;
+      }
+
+      if (mode === "recover") {
+        if (pass !== E.authPass2.value) return authError("Passwords don't match.");
+        setAuthBusy(true, "Saving password…");
+        const { error } = await SB.auth.updateUser({ password: pass });
+        setAuthBusy(false);
+        if (error) return authError(supaMsg(error));
+        toast("Password updated ✦");
+        closeAuth();
+        return;
+      }
+
       if (mode === "signup") {
         if (name.length < 2) return authError("Please enter your full name.");
         setAuthBusy(true, "Creating account…");
@@ -1434,6 +1494,8 @@
 
   E.btnGoogle.addEventListener("click", () => socialSignIn("google"));
   E.btnApple.addEventListener("click", () => socialSignIn("apple"));
+  E.forgotLink.addEventListener("click", () => openAuth("reset"));
+  E.authBack.addEventListener("click", () => openAuth("login"));
   E.btnGuest.addEventListener("click", () => {
     closeAuth();
     toast("Continuing as guest — renders stay on this device");
@@ -1556,11 +1618,19 @@
     autoGrow();
 
     if (!state.session) openAuth("login");
-    else if (SB) pullHistoryRemote();
+    else {
+      if (SB) pullHistoryRemote();
+      if (CAME_FOR_RECOVERY) openAuth("recover");
+    }
 
     if (SB) {
       SB.auth.onAuthStateChange((event, session) => {
         try {
+          if (event === "PASSWORD_RECOVERY" && session && session.user) {
+            openAuth("recover");
+            applySession(session.user);
+            return;
+          }
           if (session && session.user) applySession(session.user);
           else if (event === "SIGNED_OUT") guestReset();
         } catch (e) {

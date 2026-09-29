@@ -99,10 +99,11 @@ async function anonText(p) {
   let last = "free tier unavailable";
   for (let i = 0; i < 4; i++) {
     const seed = i === 0 ? p.seed : Math.floor(Math.random() * 2147483647);
+    const model = i < 2 ? p.model : ANON_MODEL;
     const url =
       `${ANON}/prompt/${encodeURIComponent(p.prompt)}` +
       `?width=${p.width}&height=${p.height}&seed=${seed}` +
-      `&model=${ANON_MODEL}&nologo=true&referrer=${encodeURIComponent(p.referrer)}`;
+      `&model=${encodeURIComponent(model)}&nologo=true&referrer=${encodeURIComponent(p.referrer)}`;
     try {
       const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(120000) });
       const ct = r.headers.get("content-type") || "";

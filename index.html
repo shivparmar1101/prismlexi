@@ -226,6 +226,13 @@
                   <option>Ultra</option>
                 </select>
               </label>
+              <label class="ctl"><span>Model</span>
+                <select class="ctl-select" id="modelSelect">
+                  <option value="tongyi-mai/z-image-turbo" selected>Turbo</option>
+                  <option value="flux">Flux</option>
+                  <option value="sana">Sana</option>
+                </select>
+              </label>
               <span class="ctl-note" id="baseNote">no base image</span>
             </div>
 
@@ -286,13 +293,13 @@
             <span class="field-line"></span>
           </div>
 
-          <div class="field-group">
+          <div class="field-group" id="emailGroup">
             <input class="glass-input" id="authEmail" type="email" placeholder=" " autocomplete="email" />
             <label for="authEmail">Email address</label>
             <span class="field-line"></span>
           </div>
 
-          <div class="field-group">
+          <div class="field-group" id="passGroup">
             <input class="glass-input" id="authPass" type="password" placeholder=" " autocomplete="current-password" />
             <label for="authPass">Password</label>
             <button class="pass-toggle" id="passToggle" type="button" aria-label="Show password">
@@ -300,6 +307,17 @@
             </button>
             <span class="field-line"></span>
           </div>
+
+          <div class="field-group" id="pass2Group" hidden>
+            <input class="glass-input" id="authPass2" type="password" placeholder=" " autocomplete="new-password" />
+            <label for="authPass2">Confirm password</label>
+            <span class="field-line"></span>
+          </div>
+
+          <p class="auth-foot" id="authLinks" hidden>
+            <button class="linkish" id="forgotLink" type="button" hidden>Forgot password?</button>
+            <button class="linkish" id="authBack" type="button" hidden>← Back to log in</button>
+          </p>
 
           <p class="form-error" id="formError" hidden></p>
 
@@ -322,7 +340,7 @@
           </button>
         </div>
 
-        <p class="auth-foot">
+        <p class="auth-foot" id="guestFoot">
           <button class="linkish" id="btnGuest" type="button">Continue as guest →</button>
         </p>
       </div>

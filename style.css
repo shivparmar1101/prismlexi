@@ -2918,3 +2918,14 @@ button {
   border-color: rgba(34, 211, 238, 0.4);
   animation: none;
 }
+
+/* reset / recover sub-modes: hide social + guest rows */
+#authViews.is-submode .auth-divider,
+#authViews.is-submode .social-row,
+#authViews.is-submode #guestFoot {
+  display: none;
+}
+
+.auth-foot .linkish + .linkish {
+  margin-left: 16px;
+}
