@@ -105,6 +105,7 @@
           </a>
         </div>
         <div class="topbar-right">
+          <button class="btn btn-ghost desktop-only" id="newChatBtn" type="button">+ New chat</button>
           <span class="model-chip"><span class="live-dot"></span> prism-v3-turbo</span>
           <span class="credits-chip desktop-only"><span class="cc-icon">✦</span><span class="cc-text">42 credits</span></span>
           <button class="btn btn-ghost" id="topLoginBtn" type="button" hidden>Log in</button>
@@ -234,13 +235,14 @@
                 </select>
               </label>
               <span class="ctl-note" id="baseNote">no base image</span>
+              <span class="ctl-note" id="promptCount">0 / 4000</span>
             </div>
 
             <div class="composer-row">
               <button class="attach-btn" id="attachBtn" type="button" title="Upload a base image" aria-label="Upload image">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 11.9l-8.1 8.1a5 5 0 0 1-7.1-7.1l8.5-8.5a3.4 3.4 0 0 1 4.8 4.8l-8.5 8.5a1.8 1.8 0 0 1-2.5-2.5l7.8-7.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <textarea id="prompt" rows="1" maxlength="600" placeholder="Describe an image to create…"></textarea>
+              <textarea id="prompt" rows="1" maxlength="4000" placeholder="Describe an image to create…"></textarea>
               <button class="send-btn" id="generateBtn" type="button" title="Generate" aria-label="Generate">
                 <svg class="send-idle" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 5.9L20 11l-5.8 2.1L12 19l-2.2-5.9L4 11l5.8-2.1z" fill="currentColor"/></svg>
                 <svg class="send-busy" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>

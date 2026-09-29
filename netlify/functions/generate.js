@@ -129,7 +129,7 @@ async function anonText(p) {
 async function handleText(qs) {
   const prompt = String(qs.prompt || "").trim();
   if (!prompt) return fail(400, "missing prompt");
-  if (prompt.length > 4000) return fail(400, "prompt too long (max 4000 chars)");
+  if (prompt.length > 4100) return fail(400, "prompt too long (max 4000 chars)");
 
   const params = {
     prompt,

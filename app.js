@@ -110,6 +110,8 @@
     ratioSelect: $("ratioSelect"),
     qualitySelect: $("qualitySelect"),
     modelSelect: $("modelSelect"),
+    promptCount: $("promptCount"),
+    newChatBtn: $("newChatBtn"),
     baseNote: $("baseNote"),
     fileInput: $("fileInput"),
     toast: $("toast"),
@@ -687,7 +689,7 @@
     return text + ", " + state.style + " style, " + state.quality.toLowerCase() + " quality";
   }
 
-  function anonSrc(prompt, w, h, seed) {
+  function anonSrc(prompt, w, h, seed, model) {
     return (
       CONFIG.anonEndpoint +
       "/prompt/" +
@@ -695,7 +697,7 @@
       "?width=" + w +
       "&height=" + h +
       "&seed=" + seed +
-      "&model=" + CONFIG.anonModel +
+      "&model=" + encodeURIComponent(model || CONFIG.anonModel) +
       "&nologo=true&referrer=prismlexi"
     );
   }
@@ -762,17 +764,15 @@
         const r = await tryProxy(prompt, w, h, s);
         if (r.ok) return r.src;
         lastError = r.error || lastError;
-        if (!r.unreachable) {
-          proxyAnswered = true;
-        } else {
-          const src = anonSrc(prompt, w, h, s);
-          if (await probeImage(src)) return src;
-          lastError = "free tier busy (rate limited) — try again shortly";
-        }
-      } else if (CONFIG.anonEndpoint) {
-        const src = anonSrc(prompt, w, h, s);
+        if (!r.unreachable) proxyAnswered = true;
+      }
+
+      // browser-side free tier: rescues generation when the server-side fetch
+      // is rate limited (datacenter IP) but the user's own IP is not
+      if (CONFIG.anonEndpoint) {
+        const src = anonSrc(prompt, w, h, s, attempt === 0 ? state.model : CONFIG.anonModel);
         if (await probeImage(src)) return src;
-        lastError = "free tier busy (rate limited) — try again shortly";
+        if (!proxyAnswered) lastError = "free tier busy (rate limited) — try again shortly";
       }
 
       if (proxyAnswered && attempt >= 1) break;
@@ -1288,10 +1288,28 @@
     E.profileBtn.setAttribute("aria-expanded", "false");
   }
 
+  function newChat() {
+    E.prompt.value = "";
+    autoGrow();
+    updatePromptCount();
+    clearBase();
+    applyFilter("none", false);
+    state.lastError = "";
+    E.composer.classList.remove("is-error");
+    setViewerMode("welcome");
+    toast("Started a new chat");
+    E.prompt.focus();
+  }
+
   /* ---------- events ---------- */
+
+  function updatePromptCount() {
+    E.promptCount.textContent = E.prompt.value.length + " / 4000";
+  }
 
   E.prompt.addEventListener("input", () => {
     autoGrow();
+    updatePromptCount();
     E.composer.classList.remove("is-error");
     if (E.prompt.value.trim()) E.prompt.placeholder = "Describe an image to create…";
   });
@@ -1304,12 +1322,14 @@
   });
 
   E.generateBtn.addEventListener("click", generate);
+  E.newChatBtn.addEventListener("click", newChat);
 
   E.suggestRow.addEventListener("click", (e) => {
     const chip = e.target.closest(".suggest");
     if (!chip) return;
     E.prompt.value = chip.textContent.trim();
     autoGrow();
+    updatePromptCount();
     E.prompt.focus();
   });
 
